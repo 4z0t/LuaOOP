@@ -51,10 +51,11 @@ local function processBasesTable(cls, bases)
         for key, value in pairs(base) do
             if not cls[key] and not excludeLookup[key] then
                 local seenValue = seen[key]
-                if seenValue ~= nil and seenValue ~= value then
+                if seenValue == nil then
+                    seen[key] = value
+                elseif seenValue ~= value then
                     error(string.format("Ambiguous field '%s' among base classes ", key))
                 end
-                seen[key] = value
             end
         end
     end
