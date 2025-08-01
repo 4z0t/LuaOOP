@@ -12,7 +12,7 @@ local OOP = require 'LuaOOP'
 local class = OOP.class
 
 ---@class Person
-local Person = class()
+local Person = class("Person")
 
 ---@param name string
 ---@param age number
@@ -35,7 +35,7 @@ local OOP = require 'LuaOOP'
 local class = OOP.class
 
 ---@class Person
-local Person = class()
+local Person = class("Person")
 
 ---@param name string
 ---@param age number
@@ -50,7 +50,7 @@ function Person:isAdult()
 end
 
 ---@class Student : Person
-local Student = class(Person)
+local Student = class("Student", Person)
 
 ---@param name string
 ---@param age number
@@ -75,20 +75,20 @@ local OOP = require 'LuaOOP'
 local class = OOP.class
 
 ---@class A
-local A = class()
+local A = class("A")
 function A:aFunction()
     print("A function")
 end
 
 
 ---@class B
-local B = class()
+local B = class("B")
 function B:bFunction()
     print("B function")
 end
 
 ---@class C : A, B
-local C = class(A, B)
+local C = class("C", A, B)
 
 
 local c = C()
@@ -106,7 +106,7 @@ local class = OOP.class
 local property = OOP.property
 
 ---@class A
-local A = class()
+local A = class("A")
 
 function A:init()
     self._x = 0
@@ -129,10 +129,10 @@ a.x = "hello" -- error: x must be a number
 
 ```
 
-
 ## Notes and limitations
 
 ### New fields
+
 You can add new fields into an existing class, but it's derived classes won't have them if they were added after derived classes were created.
 
 ```lua
@@ -141,13 +141,13 @@ local OOP = require 'LuaOOP'
 local class = OOP.class
 
 ---@class A
-local A = class()
+local A = class("A")
 function A:aFunction()
     print("A function")
 end
 
 ---@class B : A
-local B = class(A)
+local B = class("B", A)
 
 local b = B()
 b:aFunction() -- A function
@@ -160,31 +160,32 @@ b:a2Function() -- attempt to call a nil value (method 'a2Function')
 
 ```
 
-
 ### Multiple inheritance
+
 If base classes have fields with same names and they were not altered within derived class, then there will be an error:
+
 ```lua
 local OOP = require 'LuaOOP'
 
 local class = OOP.class
 
 ---@class A
-local A = class()
+local A = class("A")
 function A:f()
     print("A function")
 end
 
 
 ---@class B
-local B = class()
+local B = class("B")
 function B:f()
     print("B function")
 end
 
 ---@class C : A, B
-local C = class(A, B)
+local C = class("C", A, B)
 
-local c = C() -- error: Ambiguous field 'f' among base classes
+local c = C() -- error: Ambiguous field 'f' among base classes <class A> and <class B>
 ```
 
 To fix this we need to add our own implementation of `f` in derived class.
@@ -192,7 +193,7 @@ To fix this we need to add our own implementation of `f` in derived class.
 ```lua
 ...
 ---@class C : A, B
-local C = class(A, B)
+local C = class("C", A, B)
 
 function C:f()
     A.f(self)

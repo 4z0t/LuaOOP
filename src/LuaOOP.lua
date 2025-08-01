@@ -31,12 +31,14 @@ end
 
 ---@class Class
 ---@operator call(...):Class
+---@field __name string
 ---@field __bases Class[]?
 ---@field __finalized boolean
 ---@field init fun(self: Class, ...: any)?
 ---@field destroy fun(self: Class)?
 
 local excludeLookup = {
+    __name = true,
     __bases = true,
     __finalized = true,
     __index = true,
@@ -135,15 +137,22 @@ local ClassFactory = {
         return instance
     end,
 
+    ---@param self Class
+    ---@return string
+    __tostring = function(self)
+        return string.format("<class %s>", self.__name)
+    end,
+
 }
 
 
 ---Creates class with given bases
----@generic T : Class
+---@generic T
 ---@generic C : Class
+---@param name string
 ---@param ... T
 ---@return C
-local function class(...)
+local function class(name, ...)
     ---@type Class[]|false
     local bases = { ... }
     if #bases == 0 then
@@ -152,6 +161,7 @@ local function class(...)
 
     return setmetatable(
         {
+            __name = name,
             __finalized = false,
             __bases = bases
         },
