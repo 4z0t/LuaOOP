@@ -143,12 +143,18 @@ local ClassFactory = {
 ---@param ... T
 ---@return C
 local function class(...)
+    ---@type Class[]|false
     local bases = { ... }
-    local cls = setmetatable({}, ClassFactory)
-    if #bases ~= 0 then
-        cls.__bases = bases
+    if #bases == 0 then
+        bases = false
     end
-    return cls
+
+    return setmetatable(
+        {
+            __finalized = false,
+            __bases = bases
+        },
+        ClassFactory)
 end
 
 return {
