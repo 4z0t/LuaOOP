@@ -45,6 +45,22 @@ local excludeLookup = {
     __newindex = true,
 }
 
+---@param bases Class[]
+---@param ambiguousBase Class
+---@param key any
+---@param value any
+local function findAmbiguousBases(bases, ambiguousBase, key, value)
+    for _, base in ipairs(bases) do
+        if base ~= ambiguousBase then
+            if base[key] == value then
+                error(string.format("Ambiguous field '%s' among base classes %s and %s", key, base, ambiguousBase))
+                return
+            end
+        end
+    end
+    error(string.format("Ambiguous field '%s' among base classes", key))
+end
+
 ---@param cls Class
 ---@param bases Class[]
 local function processBasesTable(cls, bases)
@@ -56,7 +72,7 @@ local function processBasesTable(cls, bases)
                 if seenValue == nil then
                     seen[key] = value
                 elseif seenValue ~= value then
-                    error(string.format("Ambiguous field '%s' among base classes ", key))
+                    findAmbiguousBases(bases, base, key, seenValue)
                 end
             end
         end
