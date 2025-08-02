@@ -67,7 +67,7 @@ local function processBasesTable(cls, bases)
     local seen = {}
     for _, base in ipairs(bases) do
         for key, value in pairs(base) do
-            if not cls[key] and not excludeLookup[key] then
+            if cls[key] == nil and not excludeLookup[key] then
                 local seenValue = seen[key]
                 if seenValue == nil then
                     seen[key] = value
