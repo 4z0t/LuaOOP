@@ -9,6 +9,8 @@ local rawset = rawset
 
 --#endregion
 
+local weakKey = { __mode = "k" }
+
 ---@param t table
 ---@return boolean
 local function TableEmpty(t)
@@ -34,6 +36,7 @@ end
 ---@field __name string
 ---@field __bases Class[]?
 ---@field __finalized boolean
+---@field __subClasses table<Class, true>?
 ---@field init fun(self: Class, ...: any)?
 ---@field destroy fun(self: Class)?
 
@@ -121,6 +124,17 @@ local function populateProperties(cls)
 end
 
 ---@param cls Class
+---@param subclass Class
+local function addSubClass(cls, subclass)
+    local subClasses = cls.__subClasses
+    if not subClasses then
+        subClasses = setmetatable({}, weakKey)
+        cls.__subClasses = subClasses
+    end
+    subClasses[subclass] = true
+end
+
+---@param cls Class
 local function finalizeClass(cls)
     local bases = cls.__bases
     if bases then
@@ -131,6 +145,9 @@ local function finalizeClass(cls)
             end
         end
         processBasesTable(cls, bases)
+        for _, base in ipairs(bases) do
+            addSubClass(base, cls)
+        end
     end
     populateProperties(cls)
 end
@@ -179,12 +196,33 @@ local function class(name, ...)
         {
             __name = name,
             __finalized = false,
-            __bases = bases
+            __bases = bases,
+            __subClasses = false,
         },
         ClassFactory)
 end
 
+---Returns whether object is an instance of the given class or its subclasses
+---@param obj any
+---@param cls Class|any
+---@return boolean
+local function isinstance(obj, cls)
+    local objClass = getmetatable(obj)
+    if not objClass then
+        return false
+    end
+    if objClass == cls then
+        return true
+    end
+    local subClasses = cls.__subClasses
+    if not subClasses then
+        return false
+    end
+    return subClasses[objClass]
+end
+
 return {
     class = class,
-    property = property
+    property = property,
+    isinstance = isinstance
 }
